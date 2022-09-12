@@ -3,15 +3,13 @@ import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useContext } from "react";
 import UserContext from "../contexts/UserContext";
+import * as apiFunction from "../services/mywallet.js";
 
 export default function SignUpS() {
-  const { token } = useContext(UserContext);
-
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [passwordConfirme, setPasswordConfirme] = useState("");
-  const [confirmation, setConfirmation] = useState("none");
 
   const navigate = useNavigate();
 
@@ -19,10 +17,13 @@ export default function SignUpS() {
     e.preventDefault();
     if (!(password === passwordConfirme)) {
       setPasswordConfirme("");
-      setConfirmation("initial");
+      alert("senhas nao coincidem");
     } else {
-      //função de cadastro da api
-      navigate("/");
+      const body = { name, email, password };
+      apiFunction.signUp(body).then((res) => {
+        alert("cadastrado com sucesso");
+        navigate("/");
+      });
     }
   }
 
@@ -58,7 +59,6 @@ export default function SignUpS() {
           onChange={(e) => setPasswordConfirme(e.target.value)}
           required
         />
-        <h5 confirmation={confirmation}>Senhas não conferem</h5>
         <button type="submit">Cadastrar</button>
       </form>
       <Link to="/">
@@ -115,15 +115,5 @@ const Wraper = styled.div`
   h6 {
     font-size: 15px;
     color: white;
-  }
-  h5 {
-    display: flex;
-    justify-content: center;
-    border-radius: 4px;
-    width: 326px;
-    color: red;
-    background-color: white;
-    margin-bottom: 10px;
-    display: ${(props) => props.confirmation};
   }
 `;

@@ -1,16 +1,22 @@
 import styled from "styled-components";
 import { Link, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useContext } from "react";
+import * as apiFunction from "../services/mywallet.js";
+import UserContext from "../contexts/UserContext";
 
 export default function LoginS() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
+  const { setToken, setName } = useContext(UserContext);
   const navigate = useNavigate();
   function doLogin(e) {
     e.preventDefault();
-    //função de login da api
-    navigate("/inicio");
+    const body = { email, password };
+    apiFunction.signIn(body).then((res) => {
+      setToken(res.data.token);
+      setName(res.data.name);
+      navigate("/inicio");
+    });
   }
   return (
     <Wraper>

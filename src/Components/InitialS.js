@@ -1,12 +1,28 @@
 import styled from "styled-components";
-import { useContext, useState } from "react";
+import { useContext, useState, useEffect } from "react";
 import UserContext from "../contexts/UserContext";
 import { Link } from "react-router-dom";
+import * as apiFunctions from "../services/mywallet.js";
 
 export default function InitialS() {
   const { token, name } = useContext(UserContext);
-  const [balance, setbalance] = useState(0);
-  const [extract, setExtract] = useState([]);
+  const [balance, setBalance] = useState();
+  const [transactions, setTransactions] = useState([]);
+
+  useEffect(() => {
+    apiFunctions.getTransaction(token).then((res) => {
+      setTransactions(res.data);
+      let total = 0;
+      for (let i = 0; i < res.data.length; i++) {
+        if (res.data[i].type === "add_transaction") {
+          total += Number(res.data[i].value);
+        } else {
+          total = total - Number(res.data[i].value);
+        }
+      }
+      setBalance(total);
+    });
+  }, [token]);
 
   return (
     <Wraper>
@@ -15,10 +31,24 @@ export default function InitialS() {
         <ion-icon name="log-out-outline"></ion-icon>
       </Top>
       <Records>
-        {extract.length === 0 ? (
+        {transactions.length === 0 ? (
           <h2>Não há registros de entrada ou saída</h2>
         ) : (
-          "tem algo"
+          <>
+            <div>
+              {transactions.map((transaction, index) => (
+                <Transaction type="transaction.type" key={index}>
+                  <div>
+                    {transaction.date} {transaction.description}
+                  </div>
+                  <p>{transaction.value}</p>
+                </Transaction>
+              ))}
+            </div>
+            <span>
+              SALDO: <h5>{balance}</h5>
+            </span>
+          </>
         )}
       </Records>
       <News>
@@ -58,6 +88,17 @@ const Records = styled.div`
   background-color: white;
   border-radius: 5px;
   margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  span {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 20px;
+    h5 {
+      color: ${(props) => (props.color ? "red" : "black")};
+    }
+  }
   h2 {
     width: 200px;
     margin: 0 auto;
@@ -66,6 +107,10 @@ const Records = styled.div`
     font-size: 20px;
     word-break: break-word;
     text-align: center;
+  }
+  div {
+    font-size: 16px;
+    color: black;
   }
 `;
 const News = styled.div`
@@ -92,5 +137,14 @@ const New = styled(Link)`
   color: white;
   ion-icon {
     font-size: 30px;
+  }
+`;
+const Transaction = styled.div`
+  display: flex;
+  justify-content: space-between;
+  padding: 0px 20px;
+  margin-top: 15px;
+  p {
+    color: ${(props) => (props.type === "add_transaction" ? "grenn" : "black")};
   }
 `;

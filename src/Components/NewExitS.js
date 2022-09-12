@@ -1,17 +1,21 @@
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useContext } from "react";
+import * as apiFunction from "../services/mywallet.js";
+import UserContext from "../contexts/UserContext";
 
 export default function NewExitS() {
   const navigate = useNavigate();
-
+  const { token } = useContext(UserContext);
   const [value, setValue] = useState();
   const [description, setDescription] = useState("");
 
   function saveNewEntry(e) {
     e.preventDefault();
-    //salvar valor na api
-    navigate("/inicio");
+    const body = { value, description, type: "sub_transaction" };
+    apiFunction.postTransaction(token, body).then((res) => {
+      navigate("/inicio");
+    });
   }
 
   return (
@@ -24,7 +28,7 @@ export default function NewExitS() {
           value={value}
           onChange={(e) => setValue(e.target.value)}
           required
-        />{" "}
+        />
         <input
           type="text"
           placeholder="Descrição"
